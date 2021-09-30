@@ -168,7 +168,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
 
         <div className="expenses-totals-container">
           <p className="expenses-header-money">${selectedCategoryTotal}</p>
-          <p className="expenses-header-description">
+          <span className="expenses-header-description">
             FILTER BY: <form className="filter-category-form">
               <select onChange={handleSelectedCategory}>
                 <option value={null}>None</option>
@@ -179,7 +179,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
               </select>
             </form> 
             TOTAL EXPENSES
-          </p>
+          </span>
         </div>
         
       </div>
