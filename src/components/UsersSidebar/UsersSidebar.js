@@ -141,7 +141,6 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
                 <FontAwesomeIcon onClick={()=>{deleteUser(user)}} className="icon-button trash" icon={faTrash} />
               </div>
             </div>
-            <br></br>
             <p>BUDGET: ${user.budget}</p>
           </div>
         )
