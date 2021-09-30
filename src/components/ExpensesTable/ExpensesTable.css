@@ -1,0 +1,82 @@
+.table-container {
+  width: 95%;
+  margin: 0 auto;
+}
+
+.expenses-table {
+  width: 100%;
+  margin: 10px auto;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.expenses-table .table-header {
+  font-size: 22px;
+  padding: 15px;
+}
+
+.expenses-table tr {
+  border: 1px solid black;
+}
+
+.expenses-table tr th {
+  font-size: 20px;
+  font-weight: 500;
+  padding: 10px;
+  border-right: 1px solid black;
+}
+
+.expenses-table tr td {
+  font-size: 20px;
+  font-weight: 500;
+  padding: 10px;
+  border-right: 1px solid black;
+}
+
+.table-change {
+  width: 75%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-around;
+  border: none !important;
+}
+
+.table-change div {
+  display: block;
+  width: 50%;
+}
+
+.table-change div .icon-button {
+  padding: 3px;
+  font-size: 22px;
+  box-sizing: border-box;
+}
+
+.table-change div .edit {
+  color: rgb(36, 83, 172)
+}
+
+.table-change div .edit:hover {
+  color: rgb(53, 119, 240)
+}
+
+.table-change div .edit:active {
+  padding: 2px;
+  border: 1px solid blue;
+  border-radius: 25%;
+}
+
+.table-change div .trash {
+  color: rgb(153, 51, 37)
+}
+
+.table-change div .trash:hover {
+  color: rgb(255, 0, 0);
+}
+
+.table-change div .trash:active {
+  padding: 2px;
+  border: 1px solid red;
+  border-radius: 25%;
+}
+

@@ -1,11 +1,19 @@
 import React from 'react'
 import './Header.css'
 
-function Header() {
+function Header({ errorMessage}) {
   return (
-    <h1 className="main-header">
+    <div>
+      <div className={"error-message " + (errorMessage ? "shown" : "")}>
+        {errorMessage && 
+          errorMessage
+        }
+      </div>
+
+      <h1 className="main-header">
       Expense Tracker
     </h1>
+    </div>
   )
 }
 

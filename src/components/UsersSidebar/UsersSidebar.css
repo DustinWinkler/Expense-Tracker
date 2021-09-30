@@ -1,35 +1,39 @@
 .users-container {
-  font-family: 'Raleway', sans-serif;
-  max-width: 20%;
+  width: 25%;
+  height: 100%;
   border-right: 1px solid black;
   border-bottom: 1px solid black;
-  border-bottom-right-radius: 5px;
+  border-bottom-right-radius: 10px;
 }
 
 .users-container h1 {
-  padding-top: 5px;
+  font-size: 24px;
+  padding-top: 10px;
   text-align: center;  
 }
 
 .users-container h4 {
-  font-size: 8px;
+  font-size: 12px;
   margin: auto;
-  padding: 5px;
+  padding: 10px 5px;
   text-align: center;
   color: gray;
   margin-bottom: 10px;
   border-bottom: 1px solid black;
 }
 
-.userSearch {
+.user-search {
   display: block;
-  width: 93%;
+  width: 90%;
   border: 1px solid #a1a1a1;
   border-radius: 5px;
   padding-left: 5px;
+  margin: auto;
+  margin-bottom: 10px;
+  font-size: 18px;
 }
 
-.toggleUserForm {
+.toggle-user-form {
   margin: auto;
   width: 100%;
   height: 30px;
@@ -37,14 +41,20 @@
   border: none;
   cursor: pointer;
   font-size: 20px;
-  transition: transform 0.1s;
+}
+
+.plus-button {
+  display: inline-block;
+  transition: all 0.2s;
+  color: #2453ac;
 }
 
 .rotated {
   transform: rotate(45deg);
+  color: rgb(255, 0, 0);
 }
 
-.userForm {
+.user-form {
   width: 90%;
   margin: auto;
   padding: 5px;
@@ -54,16 +64,16 @@
   transition: all 0.75s ease-in;
 }
 
-.formOn {
+.form-on {
   max-height: 500px;
   transition: all 0.5s ease-out;
 }
 
-.userForm > * {
+.user-form > * {
   margin-top: 5px
 }
 
-.userForm input {
+.user-form input {
   display: block;
   width: 93%;
   border: 1px solid #a1a1a1;
@@ -71,11 +81,11 @@
   padding-left: 5px;
 }
 
-.userForm label {
+.user-form label {
   display: block;
 }
 
-.userForm button {
+.user-form button {
   background: none;
   border: 1px solid #a1a1a1;
   padding: 5px 15px 5px 15px;
@@ -83,12 +93,76 @@
   cursor: pointer;
 }
 
-.userForm button:hover {
+.user-form button:hover {
   border-color: black;
   background-color: rgb(160, 160, 160);
   color: white;
 }
 
-.userForm .error {
+.user-form .error {
   border-color: red;
+}
+
+.user-container {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  justify-content: space-between;
+  margin: auto;
+  margin-bottom: 10px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.user-container-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.users-container h2:hover {
+  color: blue;
+}
+
+.selected {
+  color: rgb(0, 82, 177);
+}
+
+.user-container .icon-button {
+  padding: 3px;
+  font-size: 20px;
+  box-sizing: border-box;
+}
+
+.user-container .edit {
+  color: rgb(36, 83, 172)
+}
+
+.user-container .edit:hover {
+  color: rgb(53, 119, 240)
+}
+
+.user-container .edit:active {
+  padding: 2px;
+  border: 1px solid blue;
+  border-radius: 25%;
+}
+
+.user-container .trash {
+  color: rgb(153, 51, 37)
+}
+
+.user-container .trash:hover {
+  color: rgb(255, 0, 0);
+}
+
+.user-container .trash:active {
+  padding: 2px;
+  border: 1px solid red;
+  border-radius: 25%;
+}
+
+.user-container p {
+  margin-top: 3px;
+  font-size: 12px;
 }
