@@ -1,40 +1,51 @@
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, FC } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { deleteExpense } from '../../state/slices/expenses'
+import { RootState } from '../../store'
+import { ExpenseInterface } from '../../typescript/interfaces'
 import './ExpensesTable.css'
 
-function ExpensesTable({ expenses, deleteExpense, selectedUser, selectedCategory, handleEditMode }) {
+interface ExpensesTableProps {
+  handleEditMode: Function
+}
+
+const ExpensesTable: FC<ExpensesTableProps> = ({ handleEditMode }) => {
+  const dispatch = useDispatch()
+  const expenses = useSelector((state: RootState) => state.expenses)
+  const selectedUser = useSelector((state: RootState) => state.selectedUser)
+  const selectedCategory = useSelector((state: RootState) => state.selectedCategory)
+
+  const [filteredExpenses, setFilteredExpenses] = useState<ExpenseInterface[]>([])
+  const [expenseElements, setExpenseElements] = useState<JSX.Element[]>([])
 
   // useeffect to create table elements then iterate over them in return section
-  const [filteredExpenses, setFilteredExpenses] = useState([])
-  const [expenseElements, setExpenseElements] = useState([])
-
   useEffect(() => {
     // if selectedUser, filter by their id
     // if selectedCategory, filter by that
     // update state
 
     let newExpenses = expenses
-
-    if (selectedUser) {
+    
+    if (selectedUser.user) {
       newExpenses = newExpenses.filter(expense => {
-        return (expense.holderID === selectedUser.id)
+        return (expense.holderID === selectedUser.user?.id)
       })
     }
 
-    if (selectedCategory) {
+    if (selectedCategory.category) {
       newExpenses = newExpenses.filter(expense => {
-        return (expense.category === selectedCategory)
+        return (expense.category === selectedCategory.category)
       })
     }
 
     setFilteredExpenses(newExpenses)
-
   },[expenses, selectedUser, selectedCategory])
 
   useEffect(() => {
     if (filteredExpenses) {
-      setExpenseElements(filteredExpenses.map((expense, i)=> {
+      const elements = filteredExpenses.map((expense, i)=> {
         return (
           <tr key={i}>
             <td>{`${expense.user.firstName} ${expense.user.lastName}`}</td>
@@ -45,22 +56,23 @@ function ExpensesTable({ expenses, deleteExpense, selectedUser, selectedCategory
               <div onClick={()=>{handleEditMode(expense)}}>
                 <FontAwesomeIcon className="icon-button edit" icon={faEdit} />
               </div>
-              <div onClick={()=>{deleteExpense(expense.id)}}>
+              <div onClick={()=>{dispatch(deleteExpense(expense))}}>
                 <FontAwesomeIcon className="icon-button trash" icon={faTrash} />
               </div>
             </td>
           </tr>
         )
-      }))
+      })
+      setExpenseElements(elements)      
     }
-  }, [filteredExpenses, deleteExpense, handleEditMode])
+  }, [filteredExpenses, handleEditMode, dispatch])
 
   return (
     <div className="table-container">
       <table className="expenses-table">
         <thead>
           <tr>
-            <th className="table-header" colSpan="5" >Expenses</th>
+            <th className="table-header" colSpan={5} >Expenses</th>
           </tr>
         
           <tr>

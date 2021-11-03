@@ -1,8 +1,23 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, FC } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { addExpense, updateExpense } from '../../state/slices/expenses'
+import { setSelectedCategory } from '../../state/slices/selectedCategory'
+import { setSelectedUser } from '../../state/slices/selectedUser'
+import { RootState } from '../../store'
+import { ExpenseInterface } from '../../typescript/interfaces'
 import ExpensesTable from '../ExpensesTable/ExpensesTable'
 import './Expenses.css'
 
-function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCategory, addExpense, deleteExpense, updateExpense, pingErrorMessage }) {
+interface ExpensesProps {
+  pingErrorMessage: Function
+}
+
+const Expenses: FC<ExpensesProps> = ({ pingErrorMessage }) => {
+  const expenses = useSelector((state: RootState) => state.expenses)
+  const selectedUser = useSelector((state: RootState) => state.selectedUser)
+  const selectedCategory = useSelector((state: RootState) => state.selectedCategory)
+  const dispatch = useDispatch()
+
   const [total, setTotal] = useState(0)
   const [selectedUserTotal, setSelectedUserTotal] = useState(0)
   const [selectedCategoryTotal, setSelectedCategoryTotal] = useState(0)
@@ -12,12 +27,13 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
   const [cost, setCost] = useState(0)
   const [costError, setCostError] = useState(false)
   const [editMode, setEditMode] = useState(false)
+  const [editingID, setEditingID] = useState<string | null>(null)
 
   useEffect(() => {
     let newTotal = 0
     if (expenses.length > 0) {
       expenses.forEach(expense => {
-        newTotal += parseFloat(expense.cost)
+        newTotal += expense.cost
       })
     } else {
       newTotal = 0
@@ -30,10 +46,10 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
     let newTotal = 0
     if (expenses.length > 0 && selectedUser) {
       let filteredExpenses = expenses.filter(expense => {
-        return expense.holderID === selectedUser.id
+        return expense.holderID === selectedUser.user?.id
       })
       filteredExpenses.forEach(expense => {
-        newTotal += parseFloat(expense.cost)
+        newTotal += expense.cost
       })
     } else {
       newTotal = 0
@@ -46,10 +62,10 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
     let newTotal = 0
     if (expenses.length > 0 && selectedCategory) {
       let filteredExpenses = expenses.filter(expense => {
-        return expense.category === selectedCategory
+        return expense.category === selectedCategory.category
       })
       filteredExpenses.forEach(expense => {
-        newTotal += parseFloat(expense.cost)
+        newTotal += expense.cost
       })
     } else {
       newTotal = total
@@ -62,7 +78,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
   },[selectedUser])
 
   function toggleAddingExpense() {
-    if (!selectedUser) return
+    if (!selectedUser.user) return
     setAddingExpense(prev => {
       return !prev
     })
@@ -74,7 +90,12 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
     }
   }
 
-  function handleEditMode(expense) {
+  async function handleEditMode(expense: ExpenseInterface) {
+    if (selectedUser.user?.id !== expense.user.id) {
+      dispatch(setSelectedUser(expense.user))
+    }
+    await new Promise((res) => setTimeout(res,500))
+    setEditingID(expense.id)
     setCategory(expense.category)
     setDescription(expense.description)
     setCost(expense.cost)
@@ -82,19 +103,22 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
     setAddingExpense(true)
   }
 
-  function handleCategory(e) {
-    setCategory(e.target.value)
+  function handleCategory(e: React.FormEvent<HTMLSelectElement>) {
+    const value = e.currentTarget.value
+    setCategory(value)
   }
 
-  function handleDescription(e) {
-    setDescription(e.target.value)
+  function handleDescription(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value
+    setDescription(value)
   }
 
-  function handleCost(e) {
-    setCost(e.target.value)
-    const num = parseFloat(e.target.value)
-    console.log(selectedUser.budget, selectedUserTotal + num);
-    if (!num || ((selectedUserTotal + num) > parseFloat(selectedUser.budget))) {
+  function handleCost(e: React.FormEvent<HTMLInputElement>) {
+    const num = +e.currentTarget.value
+    setCost(num)
+    const userBudget = selectedUser.user?.budget || 0
+    console.log(selectedUser.user?.budget, selectedUserTotal + num);
+    if (!num || ((selectedUserTotal + num) > userBudget)) {
       setCostError(true)
       if (!num) {
         pingErrorMessage('The cost must be a valid number')
@@ -107,28 +131,30 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
   }
 
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent<HTMLButtonElement>) {
     e.preventDefault()
 
     if (!costError) {
       if (editMode) {
-        updateExpense({
-          name: `${selectedUser.firstName} ${selectedUser.lastName}`,
+        dispatch(updateExpense({
+          user: selectedUser.user,
           category,
           cost,
           description,
-          holderID: selectedUser.id,
-        })
+          holderID: selectedUser.user?.id,
+          id: editingID
+        }))
         toggleAddingExpense()
         
       } else {
-        addExpense({
-          user: selectedUser,
+        dispatch(addExpense({
+          user: selectedUser.user,
           category,
           cost,
           description,
-          holderID: selectedUser.id
-        })
+          holderID: selectedUser.user?.id,
+          id: Math.floor(Math.random()*10000) + 1
+        }))
     
         setCategory('Food')
         setDescription('')
@@ -138,11 +164,12 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
     }
   }
 
-  function handleSelectedCategory(e) {
-    if (e.target.value === "None") {
-      changeSelectedCategory(null)
+  function handleSelectedCategory(e: React.FormEvent<HTMLSelectElement>) {
+    const value = e.currentTarget.value
+    if (value === "None") {
+      dispatch(setSelectedCategory(null))
     } else {
-      changeSelectedCategory(e.target.value)
+      dispatch(setSelectedCategory(value))
     }
   }
 
@@ -159,8 +186,8 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
         <div className="expenses-totals-container">
           <p className="expenses-header-money">${selectedUserTotal}</p>
           <p className="expenses-header-description">
-            {selectedUser ? 
-              `TOTAL EXPENSES FOR: ${selectedUser.firstName}` :
+            {selectedUser.user ? 
+              `TOTAL EXPENSES FOR: ${selectedUser.user?.firstName}` :
               "SELECT A USER TO SEE THEIR TOTAL"
             }
           </p>
@@ -171,7 +198,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
           <span className="expenses-header-description">
             FILTER BY: <form className="filter-category-form">
               <select onChange={handleSelectedCategory}>
-                <option value={null}>None</option>
+                <option value={''}>None</option>
                 <option value="Food">Food</option>
                 <option value="Travel">Travel</option>
                 <option value="Health">Health</option>
@@ -184,7 +211,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
         
       </div>
 
-      <button onClick={toggleAddingExpense} className=""> {selectedUser ? `Add Expense for ${selectedUser.firstName} ` : "Select a User to add an Expense for them "}
+      <button onClick={toggleAddingExpense} className=""> {selectedUser.user ? `Add Expense for ${selectedUser.user?.firstName} ` : "Select a User to add an Expense for them "}
         <span className={"plus-button " + (addingExpense ? " rotated" : "")}> +</span>
       </button>
 
@@ -205,7 +232,7 @@ function Expenses({ expenses, selectedUser, selectedCategory, changeSelectedCate
         <button onClick={handleSubmit}>{editMode ? "Update" : "Create"} Expense</button>
       </form>
 
-      <ExpensesTable expenses={expenses} updateExpense={updateExpense} deleteExpense={deleteExpense} selectedUser={selectedUser} selectedCategory={selectedCategory} handleEditMode={handleEditMode} />
+      <ExpensesTable handleEditMode={handleEditMode} />
 
     </div>
   )

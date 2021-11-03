@@ -1,9 +1,24 @@
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, FC } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { setSelectedUser } from '../../state/slices/selectedUser'
+import { addUser, updateUser } from '../../state/slices/users'
+import { RootState } from '../../store'
+import { UserInterface } from '../../typescript/interfaces'
 import './UsersSidebar.css'
 
-function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUser, selectedUser, pingErrorMessage }) {
+interface UsersSidebarProps {
+  pingErrorMessage: Function
+  deleteUser: Function
+}
+
+const UsersSidebar: FC<UsersSidebarProps> = ({ pingErrorMessage, deleteUser }) =>  {
+
+  const users = useSelector((state: RootState) => state.users)
+  const selectedUser = useSelector((state: RootState) => state.selectedUser)
+  const dispatch = useDispatch()
+
   const [addingUser, setAddingUser] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -11,7 +26,7 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
   const [budgetError, setBudgetError] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [filterInput, setFilterInput] = useState('')
-  const [filteredUsers, setFilteredUsers] = useState(users)
+  const [filteredUsers, setFilteredUsers] = useState<UserInterface[]>(users)
 
   useEffect(() => {
     if (filterInput === '') {
@@ -42,18 +57,20 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
     }
   }
 
-  function handleFirstName(e) {
-    setFirstName(e.target.value)
+  function handleFirstName(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value
+    setFirstName(value)
   }
 
-  function handleLastName(e) {
-    setLastName(e.target.value)
+  function handleLastName(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value
+    setLastName(value)
   }
 
-  function handleBudget(e) {
-    setBudget(e.target.value)
-    const num = parseFloat(e.target.value)
-    if (!!num) {
+  function handleBudget(e: React.FormEvent<HTMLInputElement>) {
+    const value = +e.currentTarget.value
+    setBudget(value)
+    if (!!value) {
       setBudgetError(false)
     } else {
       setBudgetError(true)
@@ -61,42 +78,47 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
     }
   }
 
-  function handleEditMode(user) {
+  function handleEditMode(user: UserInterface) {
     setFirstName(user.firstName)
     setLastName(user.lastName)
     setBudget(user.budget)
     setEditMode(true)
     setAddingUser(true)
-    if (selectedUser !== user) {
-      changeSelectedUser(user)
+    if (selectedUser.user?.id !== user.id) {
+      dispatch(setSelectedUser(user))
     }
   }
 
-  function handleSubmit(e) {
+  function handleSubmit(e: React.FormEvent<HTMLButtonElement>) {
     e.preventDefault()
-
     if (!budgetError) {
       if (editMode) {
-        updateUser({
+        console.log('this');
+        if (!selectedUser.user) return
+        dispatch(updateUser({
           firstName,
           lastName,
           budget,
-          id: selectedUser.id
-        })
-        changeSelectedUser({
+          id: selectedUser.user.id
+        }))
+
+        dispatch(setSelectedUser({
           firstName,
           lastName,
           budget,
-          id: selectedUser.id
-        })
+          id: selectedUser.user.id
+        }))
+
         toggleAddingUser()
         
       } else {
-        addUser({
+        
+        dispatch(addUser({
           firstName,
           lastName,
-          budget
-        })
+          budget,
+          id: Math.floor(Math.random()*10000) + 1
+        }))
     
         setFirstName('')
         setLastName('')
@@ -105,8 +127,9 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
     }
   }
 
-  function handleFilterInput(e) {
-    setFilterInput(e.target.value.toLowerCase())
+  function handleFilterInput(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value
+    setFilterInput(value.toLowerCase())
   }
 
   return (
@@ -132,9 +155,9 @@ function UsersSidebar({ users, addUser, updateUser, deleteUser, changeSelectedUs
       
       {filteredUsers.map((user, i) => {
         return (
-          <div key={i} className={"user-container " + (selectedUser && selectedUser.id === user.id ? "selected" : "")}>
+          <div key={i} className={"user-container " + (selectedUser.user?.id === user.id ? "selected" : "")}>
             <div className="user-container-header">
-              <h2 onClick={()=>{changeSelectedUser(user)}}>{`${user.firstName} ${user.lastName}`}</h2>
+              <h2 onClick={()=>{dispatch(setSelectedUser(user))}}>{`${user.firstName} ${user.lastName}`}</h2>
             
               <div>
                 <FontAwesomeIcon onClick={()=>{handleEditMode(user)}} className="icon-button edit" icon={faEdit} />
